@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kirim Sapaan WA</title>
+</head>
+<body>
+
+    <h2>Form Pengiriman WhatsApp</h2>
+    <form id="waForm">
+        <label>Nama Anda:</label><br>
+        <input type="text" id="nama" placeholder="Masukkan Nama" required><br><br>
+        
+        <label>Nomor WhatsApp:</label><br>
+        <input type="text" id="nomor" placeholder="6281xxx" required><br><br>
+        
+        <button type="submit" id="btnSubmit">Kirim Pesan</button>
+    </form>
+
+    <p id="status"></p>
+
+    <script>
+        document.getElementById('waForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const btn = document.getElementById('btnSubmit');
+            const statusText = document.getElementById('status');
+            
+            const nama = document.getElementById('nama').value;
+            const nomor = document.getElementById('nomor').value;
+
+            btn.disabled = true;
+            statusText.innerText = "Mengirim pesan...";
+
+            try {
+                // Mengirim request ke Cloudflare Function kita sendiri
+                const response = await fetch('/api/kirim', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nama: nama, nomor: nomor })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    statusText.innerText = "✅ Pesan berhasil dikirim ke WhatsApp!";
+                    statusText.style.color = "green";
+                } else {
+                    statusText.innerText = "❌ Gagal mengirim pesan.";
+                    statusText.style.color = "red";
+                    console.error("Error:", result);
+                }
+            } catch (error) {
+                statusText.innerText = "❌ Terjadi kesalahan jaringan.";
+                console.error(error);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
